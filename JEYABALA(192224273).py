@@ -1,51 +1,89 @@
-from cryptography.fernet import Fernet
-import getpass
-import os
+import tkinter as tk
+from time import strftime
 
-class FileEncryptor:
-    def __init__(self, key=None):
-        if key is None:
-            key = Fernet.generate_key()
-        self.key = key
-        self.cipher_suite = Fernet(key)
+def update_time():
+    string = strftime('%H:%M:%S %p')
+    label.config(text=string)
+    label.after(1000, update_time)
 
-    def encrypt(self, data):
-        encrypted_data = self.cipher_suite.encrypt(data.encode())
-        return encrypted_data
+root = tk.Tk()
+root.title("Digital Clock")
+root.geometry("400x100")
+root.configure(bg="white")
 
-    def decrypt(self, encrypted_data):
-        decrypted_data = self.cipher_suite.decrypt(encrypted_data)
-        return decrypted_data.decode()
+label = tk.Label(root, font=('calibri', 40, 'bold'), background='white', foreground='black')
+label.pack(anchor='center')
 
-    def save_to_file(self, filename, data):
-        encrypted_data = self.encrypt(data)
-        with open(filename, 'wb') as file:
-            file.write(encrypted_data)
+update_time()
 
-    def read_from_file(self, filename):
-        with open(filename, 'rb') as file:
-            encrypted_data = file.read()
-        return self.decrypt(encrypted_data)
+root.mainloop()
 
-def get_password():
-    password = getpass.getpass("Enter password: ")
-    return password
 
-def main():
-    filename = "secret_file.txt"
+import turtle
+import time
 
-    password = get_password()
-    key = Fernet.generate_key()
+wndw = turtle.Screen()
+wndw.bgcolor("black")
+wndw.setup(width=600, height=600)
+wndw.title("Analogue Clock")
+wndw.tracer(0)
 
-    encryptor = FileEncryptor(key)
+# Create the drawing pen
+pen = turtle.Turtle()
+pen.hideturtle()
+pen.speed(0)
+pen.pensize(3)
 
-    data = input("Enter the data to be saved in the file: ")
 
-    encryptor.save_to_file(filename, data)
-    print("File encrypted and saved successfully.")
+def draw_clock(hr, mn, sec, pen):
 
-    decrypted_data = encryptor.read_from_file(filename)
-    print("Decrypted data from file:", decrypted_data)
+    # Draw clock face
+    pen.up()
+    pen.goto(0, 210)
+    pen.setheading(180)
+    pen.color("green")
+    pen.pendown()
+    pen.circle(210)
 
-if __name__ == "__main__":
-    main()
+    # Draw hour hashes
+    pen.up()
+    pen.goto(0, 0)
+    pen.setheading(90)
+
+    for _ in range(12):
+        pen.fd(190)
+        pen.pendown()
+        pen.fd(20)
+        pen.penup()
+        pen.goto(0, 0)
+        pen.rt(30)
+
+    # Draw the hands
+    # Each tuple in list hands describes the color, the length
+    # and the divisor for the angle
+    hands = [("white", 80, 12), ("blue", 150, 60), ("red", 110, 60)]
+    time_set = (hr, mn, sec)
+
+    for hand in hands:
+        time_part = time_set[hands.index(hand)]
+        angle = (time_part/hand[2])*360
+        pen.penup()
+        pen.goto(0, 0)
+        pen.color(hand[0])
+        pen.setheading(90)
+        pen.rt(angle)
+        pen.pendown()
+        pen.fd(hand[1])
+
+
+while True:
+    hr = int(time.strftime("%I"))
+    mn = int(time.strftime("%M"))
+    sec = int(time.strftime("%S"))
+
+    draw_clock(hr, mn, sec, pen)
+    wndw.update()
+    time.sleep(1)
+    pen.clear()
+
+wndw.mainloop()
